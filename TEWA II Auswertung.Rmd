@@ -1,0 +1,174 @@
+---
+title: "TEWAII Auswertung"
+author: "Constantin Yves Plessen"
+date: "11/6/2018"
+output:
+  html_document:
+    code_folding: show
+    number_sections: no
+    theme: spacelab
+    toc: yes
+    toc_depth: 2
+    toc_float: no
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+---
+
+```{r setup, include=FALSE}
+library(wesanderson)
+library(knitr)
+library(tidyverse)
+opts_chunk$set(echo = TRUE,
+               collapse = FALSE,
+               comment = "",
+               strip.white = TRUE,
+               prompt = TRUE,
+               warning = FALSE,
+               messages = FALSE,
+               out.width = "70%",
+               fig.align = "center")
+```
+
+# Reproducible Workflow & Team Science
+
+Kollaborationen zwischen WissenschaftlerInnen, Labs und ganzen Disziplinen haben sich in den letzten Jahren stetig gehäuft und "Team Science" wird immer etablierter. Dies hat viele Vorteile für alle beteiligten Stakeholder, ist aber auch an Schwierigkeiten gekoppelt: 
+
+* Wer hat was, wann, wie und warum gemacht?
+
+Deswegen ist es sehr wichtig die Nachvollziehbarkeit zu gewährleisten. Es können sich immer kleinere Fehler einschleichen, die nur gefunden werden können, wenn alles nachvollziehbar ist:  
+
+* Wie wurden die Daten bearbeitet? Was wurde gemacht? Code und Verschriftlichung sollten nachvollziehbar sein!
+* Macht den wissenschaftlichen Prozess offener, transparanter, nachvollziehbarer und dadurch weniger fehleranfällig.
+* Das hat nicht nur gravierende Vorteile für den Erkenntisgewinn, sondern auch für die individuellen WissenschaftlerInnen:
+
+Arbeitserleichterung  
+
+  + da Arbeitsprozesse automatisiert werden
+  + Fehlerquellen reduziert werden 
+  + Rohdaten, bereinigte Daten, Code, Verschriftlichung und Grafiken leicht auffindbar sind  
+  
+
+Sowohl den positiven Einfluss des reproducible workflows auf den Erkenntnisgewinn und die Arbeitserleicherung würden wir euch gerne in den nächstne 20 Minuten näher demonstrieren!
+
+## Beispiel 1: Deskriptive Statistik
+### Boxplots
+<br>
+**Wenn und wie Ausreißer exkludiert wurden kann man nur im Code erkennen!**
+
+```{r}
+ggplot(mpg, aes(class, hwy)) +
+  geom_boxplot()
+```  
+
+
+```{r}
+mpg %>% 
+  filter(hwy < 40) %>% 
+ggplot(aes(class, hwy)) +
+  geom_boxplot() 
+```
+
+```{r}
+ggplot(mpg, aes(class, hwy)) +
+  geom_boxplot(outlier.shape = NA) 
+```
+
+### Histogramme
+<br>
+**Exakt der gleiche Datensatz, keine Chance zu wissen, dass ich den Ausschnitt der x-Achse komplett beliebig verändert habe, ohne in den Code zu schauen!**
+```{r}
+ggplot(mtcars, aes(x = mpg)) +
+  geom_histogram(binwidth = 1)
+```
+
+```{r}
+ggplot(mtcars, aes(x = mpg)) +
+  geom_histogram(binwidth = 1) +
+  coord_cartesian(xlim = c(0, 21))
+```
+
+
+
+## Beispiel 2: Voraussetzungstests ANOVA
+
+Im klassischen parametrischen Tests nehmen wir oft Normalverteiung und Varianzhomogenität der model error terms an. Diese Annahmen sind insbesondere für ANOVA und ANCOVA relevant.
+
+### Ausreißer  
+
+Visuelle Überprüfung via Boxplots und Scatterplots (nächste Einheit!)
+
+### Normalverteilung  
+
+Normalverteilung kann mittels Q-Q plots überprüft werden:
+```{r}
+# Q-Q Plot for variable MPG 
+attach(mtcars)
+qqnorm(mpg)
+qqline(mpg)
+```
+Starke Abweichungen deuten auf Verletzung der Normaliätsvoraussetzung hin.
+
+<br>
+Zusätzlich kann ein Shapiro-Wilk Test auf Normalverteilung durchgeführt werden:
+
+```{r}
+shapiro.test(mtcars$mpg)
+```
+
+### Homogenität der Varianzen
+
+```{r eval=F}
+# Levene Test of Homogeneity of Variances
+levene.Test(outcome_variable, group, center = median/mean)
+
+# Bartlett Test of Homogeneity of Variances
+bartlett.test(y~G, data=mydata)
+
+# Figner-Killeen Test of Homogeneity of Variances
+fligner.test(y~G, data=mydata)
+```
+### Anmerkungen
+Ich glaube es wäre wichtig die Verständlichkeit und Übersichtlichtlichkeit zu bewahren und nicht alle möglichen Tests darzustellen. Daher habe ich Voraussetzungstests für multivariate Methoden weggelassen, meint ihr?
+
+## Beispiel 3: Voraussetzungstests Regression
+Hier könnten wir die diversen Voraussetzungstests für Regressionen darstellen.
+
+# Praktische Übung
+
+Hier könnten wir beispielsweise das eben gelernte theoretische in die Praxis umsetzten mit z.b. solchen Fragestellungen:
+Kontrolliert die Voraussetzungen für eine ANOVA für diesen Datensatz: (eigenen simulieren oder aus mtcars, diamonds?)
+Kontrolliert die Voraussetzungen für eine Multiple Regression für diesen Datensatz: (eigenen simulieren oder aus mtcars, diamonds?)
+
+* Hierfür habt ihr 15 Minuten Zeit, wir werden durch die Reihen gehen und euch bei Fragen helfen. Wer als erstes fertig ist bekommt 5000 Gummibärchen.
+* Auf welche Probleme seit ihr gestoßen?
+* Habt ihr alternative Lösungswege gefunden?
+
+
+# Offene Fragen
+Mir ist noch nicht ganz klar, inwieweit sich der Punkt *Voraussetzungen für GLM/praktischen Übungen testen* von den Übungen *ALM/ANOVA* unterscheiden soll.
+
+Aus Einfachheit habe ich von einer Website den Code übernommen und den mtcars Datensatz verwendet, können gerne jederzeit einen anderen verwenden. Das war eher gedacht um einen Überblick über unsere Möglichkeiten zu gewinnen!
+
+Was eventuell auch Sinn machen würde, wenn wir das ganze als Guides aufbauen. Wir könnten für 3 Verfahren von Anfang bis Ende R-code erstellen und chronologisch durchgehen, statt jede Phase einzeln, z.b. so:  
+
+**t-Test Guide**
+
+* Set up
+* Deskriptive Statistik
+* Voraussetzung Überprüfen
+* Analyse Durchführen
+
+**ANOVA Guide**
+
+* Set up
+* Deskriptive Statistik
+* Voraussetzung Überprüfen
+* Analyse Durchführen
+
+**Multiple Lineare Regression Guide**
+
+* Set up
+* Deskriptive Statistik
+* Voraussetzung Überprüfen
+* Analyse Durchführen
